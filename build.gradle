@@ -25,7 +25,7 @@ dependencies {
 
 shadowJar {
   classifier ''
-  relocate 'com.electronwill.nightconfig', 'com.github.neapovil.inventories.nightconfig'
+  relocate 'com.electronwill.nightconfig', 'com.github.neapovil.customitems.nightconfig'
 }
 
 build.dependsOn shadowJar
