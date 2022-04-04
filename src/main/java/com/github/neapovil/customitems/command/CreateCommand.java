@@ -1,6 +1,7 @@
 package com.github.neapovil.customitems.command;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,9 +19,11 @@ import com.github.neapovil.customitems.CustomItems;
 
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPICommand;
+import dev.jorel.commandapi.arguments.Argument;
+import dev.jorel.commandapi.arguments.BooleanArgument;
 import dev.jorel.commandapi.arguments.DoubleArgument;
-import dev.jorel.commandapi.arguments.EnchantmentArgument;
 import dev.jorel.commandapi.arguments.IntegerArgument;
+import dev.jorel.commandapi.arguments.ItemStackArgument;
 import dev.jorel.commandapi.arguments.LiteralArgument;
 import dev.jorel.commandapi.arguments.StringArgument;
 import net.kyori.adventure.text.Component;
@@ -33,66 +36,49 @@ public final class CreateCommand
 
     public static final void register()
     {
+        final List<Argument> arguments = new ArrayList<>();
+
+        arguments.add(new LiteralArgument("create"));
+        arguments.add(new StringArgument("displayName"));
+        arguments.add(new DoubleArgument("attackDamage"));
+        arguments.add(new DoubleArgument("attackSpeed"));
+
         new CommandAPICommand("customitems")
                 .withPermission(CustomItems.ADMIN_COMMAND_PERMISSION)
                 .withArguments(new LiteralArgument("create"))
+                .withArguments(new ItemStackArgument("itemstack"))
                 .withArguments(new StringArgument("displayName"))
                 .withArguments(new DoubleArgument("attackDamage"))
                 .withArguments(new DoubleArgument("attackSpeed"))
-                .withArguments(new IntegerArgument("durability"))
+                .withArguments(new BooleanArgument("full_enchanted"))
+                .withArguments(new IntegerArgument("custom_model_data").replaceSuggestions(info -> new String[] { "-1" }))
                 .executesPlayer((player, args) -> {
-                    final ItemStack itemstack = player.getInventory().getItemInMainHand();
+                    final ItemStack itemstack = (ItemStack) args[0];
 
                     if (itemstack.getType().equals(Material.AIR))
                     {
                         CommandAPI.fail("ItemStack is AIR");
                     }
 
-                    apply(player, itemstack, args, null);
+                    apply(player, itemstack, args);
 
-                    plugin.getFileConfig().set("customitems." + args[0], plugin.serialize(itemstack));
-
-                    player.sendMessage("Custom item created");
-                })
-                .register();
-
-        new CommandAPICommand("customitems")
-                .withPermission(CustomItems.ADMIN_COMMAND_PERMISSION)
-                .withArguments(new LiteralArgument("create"))
-                .withArguments(new StringArgument("displayName"))
-                .withArguments(new DoubleArgument("attackDamage"))
-                .withArguments(new DoubleArgument("attackSpeed"))
-                .withArguments(new IntegerArgument("durability"))
-                .withArguments(new EnchantmentArgument("enchantment"))
-                .withArguments(new IntegerArgument("level", 1, 5))
-                .executesPlayer((player, args) -> {
-                    final ItemStack itemstack = player.getInventory().getItemInMainHand();
-
-                    if (itemstack.getType().equals(Material.AIR))
-                    {
-                        CommandAPI.fail("ItemStack is AIR");
-                    }
-
-                    final EnchantmentObject o = new EnchantmentObject((Enchantment) args[4], (int) args[5]);
-
-                    apply(player, itemstack, args, o);
-
-                    plugin.getFileConfig().set("customitems." + args[0], plugin.serialize(itemstack));
+                    plugin.getFileConfig().set("customitems." + args[1], plugin.serialize(itemstack));
 
                     player.sendMessage("Custom item created");
                 })
                 .register();
     }
 
-    private static void apply(Player player, ItemStack itemStack, Object[] args, EnchantmentObject o)
+    private static void apply(Player player, ItemStack itemStack, Object[] args)
     {
         final double genericattackdamage = -player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).getDefaultValue();
         final double genericattackspeed = -player.getAttribute(Attribute.GENERIC_ATTACK_SPEED).getDefaultValue();
 
-        final String displayname = (String) args[0];
-        final double attackdamage = (double) args[1];
-        final double attackspeed = (double) args[2];
-        final int durability = (int) args[3];
+        final String displayname = (String) args[1];
+        final double attackdamage = (double) args[2];
+        final double attackspeed = (double) args[3];
+        final boolean fullenchant = (boolean) args[4];
+        final int custommodeldata = (int) args[5];
 
         final Damageable itemmeta = ((Damageable) itemStack.getItemMeta());
         final DecimalFormat decimalformat = new DecimalFormat("0.00");
@@ -100,9 +86,9 @@ public final class CreateCommand
         double newattackdamage = Double.valueOf(decimalformat.format(genericattackdamage + attackdamage));
         double newattackspeed = Double.valueOf(decimalformat.format(genericattackspeed + attackspeed));
 
-        if (o != null)
+        if (fullenchant)
         {
-            newattackdamage += .5 * o.getLevel() + .5;
+            newattackdamage += .5 * 5 + .5;
         }
 
         final AttributeModifier attributemodifier = new AttributeModifier(
@@ -122,40 +108,24 @@ public final class CreateCommand
 
         itemmeta.addAttributeModifier(Attribute.GENERIC_ATTACK_DAMAGE, attributemodifier);
         itemmeta.addAttributeModifier(Attribute.GENERIC_ATTACK_SPEED, attributemodifier1);
-        itemmeta.setDamage(itemStack.getType().getMaxDurability() - durability);
 
         final Component component = Component.text("Attack Damage: " + (Math.abs(genericattackdamage) + newattackdamage));
         final Component component1 = Component.text("Attack Speed: " + (Math.abs(genericattackspeed) + newattackspeed));
 
         itemmeta.lore(List.of(component, component1));
 
+        if (custommodeldata != -1)
+        {
+            itemmeta.setCustomModelData(custommodeldata);
+        }
+
         itemStack.setItemMeta(itemmeta);
 
-        if (o != null)
+        if (fullenchant)
         {
-            itemStack.addEnchantment(o.getEnchantment(), o.getLevel());
-        }
-    }
-
-    static class EnchantmentObject
-    {
-        private final Enchantment enchantment;
-        private final int level;
-
-        public EnchantmentObject(Enchantment enchantment, int level)
-        {
-            this.enchantment = enchantment;
-            this.level = level;
-        }
-
-        public Enchantment getEnchantment()
-        {
-            return this.enchantment;
-        }
-
-        public int getLevel()
-        {
-            return this.level;
+            itemStack.addEnchantment(Enchantment.DAMAGE_ALL, 5);
+            itemStack.addEnchantment(Enchantment.FIRE_ASPECT, 2);
+            itemStack.addEnchantment(Enchantment.DURABILITY, 3);
         }
     }
 }
