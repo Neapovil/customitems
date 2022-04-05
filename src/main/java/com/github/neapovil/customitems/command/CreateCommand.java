@@ -123,9 +123,24 @@ public final class CreateCommand
 
         if (fullenchant)
         {
-            itemStack.addEnchantment(Enchantment.DAMAGE_ALL, 5);
-            itemStack.addEnchantment(Enchantment.FIRE_ASPECT, 2);
-            itemStack.addEnchantment(Enchantment.DURABILITY, 3);
+            final Enchantment sharpness = Enchantment.DAMAGE_ALL;
+            final Enchantment fireaspect = Enchantment.FIRE_ASPECT;
+            final Enchantment unbreaking = Enchantment.DURABILITY;
+
+            if (sharpness.canEnchantItem(itemStack))
+            {
+                itemStack.addEnchantment(sharpness, 5);
+            }
+
+            if (fireaspect.canEnchantItem(itemStack))
+            {
+                itemStack.addEnchantment(fireaspect, 2);
+            }
+
+            if (unbreaking.canEnchantItem(itemStack))
+            {
+                itemStack.addEnchantment(unbreaking, 3);
+            }
         }
     }
 }
