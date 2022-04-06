@@ -86,11 +86,6 @@ public final class CreateCommand
         double newattackdamage = Double.valueOf(decimalformat.format(genericattackdamage + attackdamage));
         double newattackspeed = Double.valueOf(decimalformat.format(genericattackspeed + attackspeed));
 
-        if (fullenchant)
-        {
-            newattackdamage += .5 * 5 + .5;
-        }
-
         final AttributeModifier attributemodifier = new AttributeModifier(
                 UUID.randomUUID(),
                 "generic.attack_damage",
@@ -109,7 +104,14 @@ public final class CreateCommand
         itemmeta.addAttributeModifier(Attribute.GENERIC_ATTACK_DAMAGE, attributemodifier);
         itemmeta.addAttributeModifier(Attribute.GENERIC_ATTACK_SPEED, attributemodifier1);
 
-        final Component component = Component.text("Attack Damage: " + (Math.abs(genericattackdamage) + newattackdamage));
+        double realattackdamage = Math.abs(genericattackdamage) + newattackdamage;
+
+        if (fullenchant)
+        {
+            realattackdamage += .5 * 5 + .5;
+        }
+
+        final Component component = Component.text("Attack Damage: " + realattackdamage);
         final Component component1 = Component.text("Attack Speed: " + (Math.abs(genericattackspeed) + newattackspeed));
 
         itemmeta.lore(List.of(component, component1));
