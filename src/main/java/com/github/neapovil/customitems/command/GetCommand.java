@@ -4,6 +4,7 @@ import com.github.neapovil.customitems.CustomItems;
 
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPICommand;
+import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.LiteralArgument;
 import dev.jorel.commandapi.arguments.StringArgument;
 
@@ -16,19 +17,19 @@ public final class GetCommand
         new CommandAPICommand("customitems")
                 .withPermission(CustomItems.USER_COMMAND_PERMISSION)
                 .withArguments(new LiteralArgument("get"))
-                .withArguments(new StringArgument("itemName").replaceSuggestions(info -> plugin.getCustomItems()))
+                .withArguments(new StringArgument("itemName").replaceSuggestions(ArgumentSuggestions.strings(info -> plugin.getCustomItems())))
                 .executesPlayer((player, args) -> {
                     final String itemname = (String) args[0];
                     final String base64 = plugin.getFileConfig().get("customitems." + itemname);
 
                     if (base64 == null)
                     {
-                        CommandAPI.fail("This item doesn't exist");
+                        throw CommandAPI.fail("This item doesn't exist");
                     }
 
                     if (player.getInventory().firstEmpty() == -1)
                     {
-                        CommandAPI.fail("Your inventory is full");
+                        throw CommandAPI.fail("Your inventory is full");
                     }
 
                     player.getInventory().addItem(plugin.deserialize(base64));

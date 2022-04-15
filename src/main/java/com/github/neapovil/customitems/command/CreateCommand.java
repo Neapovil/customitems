@@ -20,6 +20,7 @@ import com.github.neapovil.customitems.CustomItems;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.Argument;
+import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.BooleanArgument;
 import dev.jorel.commandapi.arguments.DoubleArgument;
 import dev.jorel.commandapi.arguments.IntegerArgument;
@@ -51,13 +52,13 @@ public final class CreateCommand
                 .withArguments(new DoubleArgument("attackDamage"))
                 .withArguments(new DoubleArgument("attackSpeed"))
                 .withArguments(new BooleanArgument("full_enchanted"))
-                .withArguments(new IntegerArgument("custom_model_data").replaceSuggestions(info -> new String[] { "-1" }))
+                .withArguments(new IntegerArgument("custom_model_data").replaceSuggestions(ArgumentSuggestions.strings(info -> new String[] { "-1" })))
                 .executesPlayer((player, args) -> {
                     final ItemStack itemstack = (ItemStack) args[0];
 
                     if (itemstack.getType().equals(Material.AIR))
                     {
-                        CommandAPI.fail("ItemStack is AIR");
+                        throw CommandAPI.fail("ItemStack is AIR");
                     }
 
                     apply(player, itemstack, args);
