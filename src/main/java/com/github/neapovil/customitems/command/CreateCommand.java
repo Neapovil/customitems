@@ -1,7 +1,6 @@
 package com.github.neapovil.customitems.command;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,7 +18,6 @@ import com.github.neapovil.customitems.CustomItems;
 
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPICommand;
-import dev.jorel.commandapi.arguments.Argument;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.BooleanArgument;
 import dev.jorel.commandapi.arguments.DoubleArgument;
@@ -37,16 +35,9 @@ public final class CreateCommand
 
     public static final void register()
     {
-        final List<Argument> arguments = new ArrayList<>();
-
-        arguments.add(new LiteralArgument("create"));
-        arguments.add(new StringArgument("displayName"));
-        arguments.add(new DoubleArgument("attackDamage"));
-        arguments.add(new DoubleArgument("attackSpeed"));
-
         new CommandAPICommand("customitems")
-                .withPermission(CustomItems.ADMIN_COMMAND_PERMISSION)
-                .withArguments(new LiteralArgument("create"))
+                .withPermission(CustomItems.USER_COMMAND_PERMISSION)
+                .withArguments(new LiteralArgument("create").withPermission(CustomItems.ADMIN_COMMAND_PERMISSION))
                 .withArguments(new ItemStackArgument("itemstack"))
                 .withArguments(new StringArgument("displayName"))
                 .withArguments(new DoubleArgument("attackDamage"))

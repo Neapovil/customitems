@@ -15,8 +15,8 @@ public final class DeleteCommand
     public static final void register()
     {
         new CommandAPICommand("customitems")
-                .withPermission(CustomItems.ADMIN_COMMAND_PERMISSION)
-                .withArguments(new LiteralArgument("delete"))
+                .withPermission(CustomItems.USER_COMMAND_PERMISSION)
+                .withArguments(new LiteralArgument("delete").withPermission(CustomItems.ADMIN_COMMAND_PERMISSION))
                 .withArguments(new StringArgument("itemName").replaceSuggestions(ArgumentSuggestions.strings(info -> plugin.getCustomItems())))
                 .executesPlayer((player, args) -> {
                     final String itemname = (String) args[0];
